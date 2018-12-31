@@ -1,2 +1,2 @@
-# PoSH-ACI
+# ACI-PoSH
 PowerShell modules for Cisco ACI
