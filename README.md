@@ -64,14 +64,14 @@ Get-ACI-L3out-All
 New-ACI-AppProfile
 New-ACI-BD
 New-ACI-EPG
-New-ACI-Interface (soon)
-New-ACI-Interface-VPC (soon)
+New-ACI-Interface
+New-ACI-Interface-VPC 
 New-ACI-Tenant
 New-ACI-VRF
 Update-ACI-EPG
 Update-ACI-EPG-PortBinding
 </pre>
-There is no PowerShell command help text. Something I need to add... however a lot of the commands are obvious.
+All modules now have updated help text.   Hopefully that will be useful!
 <pre>
 Get-ACI-Tenant
 
