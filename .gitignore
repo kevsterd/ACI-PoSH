@@ -1,2 +1,9 @@
+#Dev Build and Test rigs
 start-dev-env.ps1
+test-rig.ps1
+test-rig1.ps1
+test-rig2.ps1
+test-*.ps1
+
+#Traces and Collected i/o
 Collected-Traces.txt

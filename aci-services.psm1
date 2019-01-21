@@ -16,6 +16,7 @@
 ##	- Add	validation of some input - should check	tenant exists etc
 ##					
 ###################################################################################################################
+# 2.2 - 2019-01-22 - KPI - More methods and user mgmt
 # 2.1 - 2019-01-10 - KPI - Added more create methods and help text finally
 # 2.0 - 2019-01-03 - KPI - Initial GitHub Release
 # 1.4 - 2018-11-05 - KPI - Code Tidy
@@ -25,7 +26,10 @@
 # 1.0 - 2018-02-23 - KPI - Initial Version
 ###################################################################################################################
 
-##Read functions
+###################################################################################################################
+## Read functions
+###################################################################################################################
+
 function Get-ACI-Tenant
 {
     <#
@@ -493,6 +497,41 @@ function Get-ACI-L3out ([string]$Tenant,[string]$L3out)
     #Output
     $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty l3extRsEctx | Select-Object -ExpandProperty attributes | Select-Object tRn, tnFvCtxName, descr, dn
     }
+
+    function Get-ACI-Fabric-PhysicalDomain
+    {
+    <#
+    .SYNOPSIS
+    Get Physical Domains for the ACI Fabric
+    
+    .DESCRIPTION
+    Get Physical Domains for the ACI Fabric. 
+    
+    .EXAMPLE
+    Get-ACI-Fabric-PhysicalDomain
+
+    name                nameAlias dn                          
+    ----                --------- --                          
+    phys                          uni/phys-phys               
+    SnV_phys                      uni/phys-SnV_phys           
+    Heroes_phys                   uni/phys-Heroes_phys        
+    jinyetest                     uni/phys-jinyetest          
+    HL-PhyDom                     uni/phys-HL-PhyDom
+    
+    .NOTES
+    General notes
+    #>
+
+    #Define URL to pool
+    $PollURL = 'api/node/mo/uni.json?query-target=subtree&target-subtree-class=physDomP'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON
+    RawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output
+    $RawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty physDomP | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, dn
+    }
+
 function Get-ACI-Fabric-AEEP
     {
     <#
@@ -841,9 +880,123 @@ function Get-ACI-Fabric-LeafAccessPolicy ([string]$LeafAccessPolicy)
     $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvnsEncapBlk | Select-Object -ExpandProperty attributes | Select-Object name, allocMode, from, to, dn | Format-Table
     }
 
-##################################################################
-#---- Create functions
-##################################################################
+function Get-ACI-AAA-SecDomain
+    {
+    <#
+    .SYNOPSIS
+    Get all AAA Security Domains for the Fabric
+    
+    .DESCRIPTION
+    Get all Fabric AAA Security Domains defined within the fabric.
+    
+    .EXAMPLE
+    Get-ACI-AAA-SecDomain
+
+    name   nameAlias descr dn                       
+    ----   --------- ----- --                       
+    all                    uni/userext/domain-all   
+    common                 uni/userext/domain-common
+    mgmt                   uni/userext/domain-mgt
+    
+    .NOTES
+    General notes
+    #>
+    
+    
+    #URL to pool
+    $PollURL = 'api/node/class/aaaDomain.json?order-by=aaaDomain.name|asc'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output
+    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaDomain | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, descr, dn        
+    }
+
+    function Get-ACI-AAA-SecRole
+    {
+    <#
+    .SYNOPSIS
+    Get all AAA Security Roles for the Fabric
+    
+    .DESCRIPTION
+    Get all Fabric AAA Security Roles defined within the fabric.
+    
+    .EXAMPLE
+    Get-ACI-AAA-SecRole
+
+    name          : vmm-admin
+    nameAlias     : 
+    priv          : vmm-connectivity,vmm-ep,vmm-policy,vmm-protocol-ops,vmm-security
+    roleIsBuiltin : yes
+    descr         : 
+    dn            : uni/userext/role-vmm-admin
+
+    and more.....
+    
+    .NOTES
+    General notes
+    #>
+    
+    #URL to pool
+    $PollURL = 'api/node/class/aaaRole.json?query-target-filter=ne(aaaRole.name,"read-only")&order-by=aaaRole.name'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output
+    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaRole | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, priv, roleIsBuiltin, descr, dn        
+    }
+
+    function Get-ACI-AAA-LocalUsers
+    {
+    <#
+    .SYNOPSIS
+    Get all AAA Local Users for the Fabric
+    
+    .DESCRIPTION
+    Get all Fabric AAA Local Users defined within the fabric.
+    
+    .EXAMPLE
+    Get-ACI-AAA-LocalUsers
+
+
+    name          : admin
+    nameAlias     : 
+    lastName      : 
+    firstName     : 
+    email         : 
+    phone         : 
+    accountStatus : active
+    expires       : no
+    expiration    : never
+    descr         : 
+    dn            : uni/userext/user-admin
+
+    and more.....
+    
+    .NOTES
+    General notes
+    #>
+    
+    #URL to pool
+    $PollURL = 'api/node/class/aaaUser.json?order-by=aaaUser.name'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output
+    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaUser | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, lastName, firstName, email, phone, accountStatus, expires, expiration, descr, dn        
+
+    }
+
+
+
+
+
+###################################################################################################################
+## Create functions
+###################################################################################################################
 
 # Create new Tenant (L1)
 function New-ACI-Tenant ([string]$Tenant,[string]$Description)
@@ -1635,9 +1788,149 @@ function New-ACI-Interface (
     }    
 }
 
-##
+function New-ACI-AAA-LocalUser 
+    (
+    [string]$Username,
+    [string]$FirstName,
+    [string]$LastName,
+    [string]$Password,
+    [string]$email,
+    [string]$phone,
+    [string]$SecDomain,
+    [string]$SecRole,
+    [string]$SecPriv,
+    [string]$Description)
+    {
+    <#
+    .SYNOPSIS
+    Module for adding an AAA local user to ACI Fabric
+    
+    .DESCRIPTION
+    Module for adding an AAA local user to ACI Fabric
+    
+    .PARAMETER Username
+    Username in legal format
+    
+    .PARAMETER FirstName
+    First/Given Name
+    
+    .PARAMETER LastName
+    Surname
+    
+    .PARAMETER Password
+    Password in plain text form.  Remember ACI complexity may be set !
+    
+    .PARAMETER email
+    email address
+    
+    .PARAMETER phone
+    Phone Number
+    
+    .PARAMETER SecDomain
+    Security Domain to add to.  Usually something like 'all'
+    
+    .PARAMETER SecRole
+    Security Role to grant.  Usually 'admin'
+    
+    .PARAMETER SecPriv
+    Security Privilage to grant.   Usually 'writePriv' or 'readPriv'
+    
+    .PARAMETER Description
+    Description
+    
+    .EXAMPLE
+    New-ACI-AAA-LocalUser -Username admin2 -Password Rh0n3!R1vrzz -SecDomain all -SecRole admin -SecPriv writePriv
+    
+    .NOTES
+    General notes
+    #>
+        
+    if (!($Username))
+        {
+        Write-Host "No Username specified"
+        Break
+        }
+    if (!($Password))
+        {
+        Write-Host "No User Password specified"
+        Break
+        }
+    if (!($SecDomain))
+        {
+        Write-Host "No User Security Domain specified.    all suggested"
+        Break
+        }
+    if (!($SecRole))
+        {
+        Write-Host "No User Security Role specified.    admin suggested"
+        Break
+        }
+    if (!($SecPriv))
+        {
+        Write-Host "No User Security Privilage specified.   writePriv suggested"
+        Break
+        }
+    #Define URL to pool
+    $PollURL	= 'api/node/mo/uni/userext/user-' + $Username + '.json'
+    $PollBody = '
+    {
+        "aaaUser": {
+            "attributes": {
+                "dn": "uni/userext/user-' + $Username + '",
+                "name": "' + $Username + '",
+                "rn": "user-' + $Username + '",
+                "status": "created",
+                "pwd": "' + $Password + '"
+            },
+            "children": [
+                {
+                    "aaaUserDomain": {
+                        "attributes": {
+                            "dn": "uni/userext/user-' + $Username + '/userdomain-' + $SecDomain + '",
+                            "name": "' + $SecDomain + '",
+                            "status": "created,modified"
+                        },
+                        "children": [
+                            {
+                                "aaaUserRole": {
+                                    "attributes": {
+                                        "dn": "uni/userext/user-' + $Username + '/userdomain-' + $SecDomain + '/role-' + $SecRole + '",
+                                        "name": "' + $SecRole + '",
+                                        "privType": "' + $SecPriv + '",
+                                        "status": "created,modified"
+                                    },
+                                    "children": []
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+    '
+    Try
+        {
+        #Munge URL
+        $PollRaw = New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
+        #Poll the URL via HTTP then convert to PoSH objects from JSON
+        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
+        #Needs output validation here.  For now echo API return
+        Write-Host $APIRawJson 
+        }
+    Catch
+        {
+        Write-Host 'An error occured whilst calling the API. Exception: ($_.Exception.Message)' -ForegroundColor Red
+        Write-Host ' --- This is usually a typo or case issue, if you are sure you have the correct entries' -ForegroundColor Red
+        }
+    }
+
+
+
+
+###################################################################################################################
 ## Update/Modify functions
-##
+###################################################################################################################
 
 # Update an existing EPG (L3)
 function Update-ACI-EPG ([string]$Tenant,[string]$AP,[string]$EPG,[string]$Domain,[string]$Contract,[string]$ContractType)

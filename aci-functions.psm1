@@ -100,7 +100,7 @@ General notes
 				{
 				$global:ACIPoSHLoggingIn = $True
 				Write-Host ""
-				Write-Host "Not currently logged into.APIC. Re-authenticate using the New-ACI-Login commandlet " -ForegroundColor Yellow
+				Write-Host "Not currently logged into APIC. Re-authenticate using the New-ACI-Login commandlet " -ForegroundColor Yellow
 				Break
 				}
 			}
@@ -147,10 +147,8 @@ General notes
 		
 		$sr = New-Object System.IO.StreamReader($response.GetResponseStream())
 		$txt = $sr.ReadToEnd()
-		## NOTE: comment out the next line if you don't want this function to print to the terminal
-		 #Write-Host "CONTENT-TYPE: " Sresponse.ContentType
-		## NOTE: comment out the next line if you don't want this function to print to the terminal
-		 #Write-Host "RAW RESPONSE DATA:" . $txt
+		#Write-Debug "CONTENT-TYPE: " $response.ContentType
+		#Write-Debug "RAW RESPONSE DATA:" . $txt
 		## Return the response body to the caller
 		$return_value.httpResponse = $txt
 		$return_value.httpCode = [int]$response.StatusCode
@@ -160,10 +158,8 @@ General notes
 		## This catches errors from the server (404, 500, 501, etc.)
 		catch [Net.WebException] {
 			[System.Net.HttpWebResponse] $resp = [System.Net.HttpWebResponse] $_.Exception.Response
-		## NOTE: comment out the next line if you don't want this function to print to the terminal
-		 #WriteHost $resp.StatusCode -ForegroundColor Red -BackgroundColor Yellow
-		## NOTE: comment out the next line if you don't want this function to print to the terminal
-		 #Write-Host $resp.StatusDescription -ForegroundColor. Red -BackgroundColor Yellow
+		#Write-Debug $resp.StatusCode -ForegroundColor Red -BackgroundColor Yellow
+		#Write-Debug $resp.StatusDescription -ForegroundColor. Red -BackgroundColor Yellow
 		## Return the error to the caller
 		## If the APIC returns a 403, the session most likely has been expired. Login again and rerun the API call
 		if($resp.StatusCode -eq 403)
