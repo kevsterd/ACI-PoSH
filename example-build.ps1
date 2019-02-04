@@ -1,4 +1,4 @@
-﻿$Tenant = 'ABCD-Hosting'
+﻿$Tenant = 'AA-Hosting'
 $dName = 'DEV'
 $pName = 'PROD'
 #
@@ -8,7 +8,10 @@ $pBeAp =  $pName + '_BE'
 $pFeWeb = $pFeAp + '-WEB'
 $pFeLB =  $pFeAp + '-LB'
 #
-New-ACI-Tenant -Tenant $Tenant -Description 'Top Tier Tenant'
+
+
+If (!(Get-ACI-Tenant | Where-Object {$_.Name -like $Tenant }))
+    {New-ACI-Tenant -Tenant $Tenant -Description 'Top Tier Tenant'}
 
 New-ACI-VRF -Tenant $Tenant -VRF $dName -Description ($Tenant + $dName)
 New-ACI-VRF -Tenant $Tenant -VRF $pName -Description ($Tenant + $pName)
@@ -25,8 +28,8 @@ New-ACI-BD -Tenant $Tenant -VRF $pName -BD 1010-PROD-FE-LB-DATA -L3out external_
 New-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -BD 1000-PROD-FE-WEB-DATA
 New-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeLB  -BD 1010-PROD-FE-LB-DATA
 
-Update-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -ContractType Provided -Contract external.web.l3.contract -Domain 
-Update-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -ContractType Consumed -Contract external.lb.contract
+Update-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -ContractType Provided -Contract external.web.l3.contract -Domain phys
+Update-ACI-EPG -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -ContractType Consumed -Contract external.lb.contract -Domain phys
 
 Update-ACI-EPG-PortBinding -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -VLAN 1000 -PortType untagged -Switch A101 -Port 20-29
 Update-ACI-EPG-PortBinding -Tenant $Tenant -AP $pFeAp -EPG $pFeWeb -VLAN 1000 -PortType untagged -Switch A102 -Port 20-29

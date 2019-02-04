@@ -16,6 +16,8 @@
 ##	- Add	validation of some input - should check	tenant exists etc
 ##					
 ###################################################################################################################
+# 2.3 - 2019-02-03 - KPI - Better output and validation.  Pipeline input support and more.  Removed format-table on some outputs
+#                        - as was causing pipeline parse issues.  You can of course use in on outputs :)
 # 2.2 - 2019-01-22 - KPI - More methods and user mgmt
 # 2.1 - 2019-01-10 - KPI - Added more create methods and help text finally
 # 2.0 - 2019-01-03 - KPI - Initial GitHub Release
@@ -63,9 +65,9 @@ function Get-ACI-Tenant
     #Poll the URL via HTTP then convert to PoSH objects from JSON
     $TenRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output ...
-    $TenRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvTenant | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
+    Write-Output $TenRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvTenant | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
     }
-function Get-ACI-AppProfile-All ([string]$Tenant)
+function Get-ACI-AppProfile-All ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant)
     {
     <#
     .SYNOPSIS
@@ -100,9 +102,10 @@ function Get-ACI-AppProfile-All ([string]$Tenant)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $ApRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $ApRawJson  | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
+    Write-Output $ApRawJson  | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
     }
-function Get-ACI-AppProfile ([string]$Tenant,[string]$AP)
+function Get-ACI-AppProfile ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant,
+                             [Parameter(ValueFromPipelineByPropertyName)][string]$AP)
     {
     <#
     .SYNOPSIS
@@ -144,9 +147,12 @@ function Get-ACI-AppProfile ([string]$Tenant,[string]$AP)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $ApRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $ApRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAEPg | Select-Object -ExpandProperty attributes | Select-Object name, prio, descr, dn
+    Write-Output $ApRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAEPg | Select-Object -ExpandProperty attributes | Select-Object name, prio, descr, dn
     }
-function Get-ACI-EPG ([string]$Tenant,[string]$AP,[string]$EPG)
+function Get-ACI-EPG (
+    [Parameter(ValueFromPipelineByPropertyName)][string]$Tenant,
+    [Parameter(ValueFromPipelineByPropertyName)][string]$AP,
+    [Parameter(ValueFromPipelineByPropertyName)][string]$EPG)
     {
     <#
     .SYNOPSIS
@@ -208,17 +214,19 @@ function Get-ACI-EPG ([string]$Tenant,[string]$AP,[string]$EPG)
         write-host ""
         write-host "Domain Binding"
         write-host "--------------"
-        $DomRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty fvRsDomAtt | Select-Object -ExpandProperty attributes
+        Write-Output $DomRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty fvRsDomAtt | Select-Object -ExpandProperty attributes
         write-host ""
         write-host "Static Path Binding"
         write-host "-------------------"	
-        $SPathRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty fvRsPathAtt | Select-Object -ExpandProperty attributes 
+        Write-Output $SPathRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty fvRsPathAtt | Select-Object -ExpandProperty attributes 
         write-host ""
         write-host "Contracts"	
-        $ContractRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty * | Select-Object -ExpandProperty attributes	
+        Write-Output $ContractRawJson | Select-Object -ExpandProperty imdata | Select-Object -ExpandProperty * | Select-Object -ExpandProperty attributes	
     }	
 
-function Get-ACI-EPG-All ([string]$Tenant,[string]$AP)	
+function Get-ACI-EPG-All (
+    [Parameter(ValueFromPipelineByPropertyName)][string]$Tenant,
+    [Parameter(ValueFromPipelineByPropertyName)][string]$AP)	
     {	
     <#
     .SYNOPSIS
@@ -260,10 +268,10 @@ function Get-ACI-EPG-All ([string]$Tenant,[string]$AP)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $ApRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $ApRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAEPg | Select-Object -ExpandProperty attributes | Select-Object name, prio, descr, dn
+    Write-Output $ApRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvAEPg | Select-Object -ExpandProperty attributes | Select-Object name, prio, descr, dn
     }
 
-function Get-ACI-BD-All ([string]$Tenant)
+function Get-ACI-BD-All ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant)
     {
     <#
     .SYNOPSIS
@@ -299,9 +307,11 @@ function Get-ACI-BD-All ([string]$Tenant)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvBd | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvBd | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
     }
-function Get-ACI-BD ([string]$Tenant,[string]$BD)
+function Get-ACI-BD (
+    [Parameter(ValueFromPipelineByPropertyName)][string]$Tenant,
+    [Parameter(ValueFromPipelineByPropertyName)][string]$BD)
     {
     <#
     .SYNOPSIS
@@ -372,18 +382,19 @@ function Get-ACI-BD ([string]$Tenant,[string]$BD)
     Write-Host ""
     Write-Host "Bridge Domain"
     Write-Host "-------------"
-    $OutRawJson	| Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvBd | Select-Object -ExpandProperty attributes | Select-Object name , descr, mtu, limitIpLearnToSubnets, arpFlood, dn
+    Write-Output $OutRawJson	| Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvBd | Select-Object -ExpandProperty attributes | Select-Object name , descr, mtu, limitIpLearnToSubnets, arpFlood, dn
     Write-Host ""
     Write-Host "L3 Out Interfaces"
     Write-Host "-----------------"
-    $OutRawJsonL3 | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvRsBDToOut | Select-Object -ExpandProperty attributes | Select-Object tnL3extOutName
+    Write-Output $OutRawJsonL3 | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvRsBDToOut | Select-Object -ExpandProperty attributes | Select-Object tnL3extOutName
     Write-Host ""
     Write-Host "Subnet Address"
     Write-Host "--------------"
-    $OutRawJsonSub | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvSubnet	| Select-Object -ExpandProperty attributes | Select-Object ip, scope
+    Write-Output $OutRawJsonSub | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvSubnet	| Select-Object -ExpandProperty attributes | Select-Object ip, scope
     }
 
-function Get-ACI-VRF ([string]$Tenant)
+function Get-ACI-VRF (
+    [Parameter(ValueFromPipelineByPropertyName)][Alias('Name')][string]$Tenant)
     {
     <#
     .SYNOPSIS
@@ -413,17 +424,17 @@ function Get-ACI-VRF ([string]$Tenant)
         Write-Host "No Tenant specified"
         Break
         }
-    #Define URL to pool
+    
     $PollURL = 'api/node/mo/uni/tn-' + $Tenant +'.json?query-target=children&target-subtree-class=fvCtx'
-    #Munge URL
+    
     $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
-    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
-    #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvCtx | Select-Object -ExpandProperty attributes | Select-Object name, descr, bdEnforcedEnable, pcEnfDir, pcEnfPref, dn | Format-Table
+    
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvCtx | Select-Object -ExpandProperty attributes | Select-Object name, descr, bdEnforcedEnable, pcEnfDir, pcEnfPref, dn 
  }
 
-function Get-ACI-L3out-All ([string]$Tenant)
+function Get-ACI-L3out-All ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant)
     {
     <#
     .SYNOPSIS
@@ -458,9 +469,11 @@ function Get-ACI-L3out-All ([string]$Tenant)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty l3extOut | Select-Object -ExpandProperty attributes | Select-Object name, enforceRtctrl, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty l3extOut | Select-Object -ExpandProperty attributes | Select-Object name, enforceRtctrl, descr, dn
     }
-function Get-ACI-L3out ([string]$Tenant,[string]$L3out)
+function Get-ACI-L3out (
+    [Parameter(ValueFromPipelineByPropertyName)][string]$Tenant,
+    [Parameter(ValueFromPipelineByPropertyName)][string]$L3out)
     {
     <#
     .SYNOPSIS
@@ -495,7 +508,7 @@ function Get-ACI-L3out ([string]$Tenant,[string]$L3out)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty l3extRsEctx | Select-Object -ExpandProperty attributes | Select-Object tRn, tnFvCtxName, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty l3extRsEctx | Select-Object -ExpandProperty attributes | Select-Object tRn, tnFvCtxName, descr, dn
     }
 
     function Get-ACI-Fabric-PhysicalDomain
@@ -527,9 +540,9 @@ function Get-ACI-L3out ([string]$Tenant,[string]$L3out)
     #Munge URL
     $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
     #Poll the URL via HTTP then convert to PoSH objects from JSON
-    RawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    $RawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $RawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty physDomP | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, dn
+    Write-Output $RawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty physDomP | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, dn
     }
 
 function Get-ACI-Fabric-AEEP
@@ -562,7 +575,7 @@ function Get-ACI-Fabric-AEEP
     #Poll the URL via HTTP then convert to PoSH objects from JSON
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAttEntityP | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAttEntityP | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
     }
 function Get-ACI-Fabric-Port-LinkLevel
     {
@@ -591,7 +604,7 @@ function Get-ACI-Fabric-Port-LinkLevel
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData  | Select-Object -ExpandProperty fabricHIfPol | Select-Object -ExpandProperty attributes | Select-Object name, speed, autoNeg, descr, dn | Format-Table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData  | Select-Object -ExpandProperty fabricHIfPol | Select-Object -ExpandProperty attributes | Select-Object name, speed, autoNeg, descr, dn 
     }
  function Get-ACI-Fabric-Port-CDP
     {
@@ -622,7 +635,7 @@ function Get-ACI-Fabric-Port-LinkLevel
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output	
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty cdpIfPol | Select-Object -ExpandProperty attributes | Select-Object name, adminSt, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty cdpIfPol | Select-Object -ExpandProperty attributes | Select-Object name, adminSt, descr, dn
     }	
 function Get-ACI-Fabric-Port-LLDP	
     {	
@@ -653,7 +666,7 @@ function Get-ACI-Fabric-Port-LLDP
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty lldpIfPol | Select-Object -ExpandProperty attributes | Select-Object name, adminRxSt, adminTxSt, descr, dn | Format-table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty lldpIfPol | Select-Object -ExpandProperty attributes | Select-Object name, adminRxSt, adminTxSt, descr, dn 
     }
 function Get-ACI-Fabric-Port-LACP
     {
@@ -685,7 +698,7 @@ function Get-ACI-Fabric-Port-LACP
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty lacpLagPol | Select-Object -ExpandProperty attributes | Select-Object name, mode, ctrl, minLinks, maxLinks, descr, dn | Format-Table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty lacpLagPol | Select-Object -ExpandProperty attributes | Select-Object name, mode, ctrl, minLinks, maxLinks, descr, dn 
     }
 function Get-ACI-Fabric-Switch-Leaf
     {
@@ -716,7 +729,7 @@ function Get-ACI-Fabric-Switch-Leaf
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraNodeP | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraNodeP | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn
     }
 function Get-ACI-Fabric-VLANPool-All
     {
@@ -747,7 +760,7 @@ function Get-ACI-Fabric-VLANPool-All
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvnsVlanInstP | Select-Object -ExpandProperty attributes | Select-Object name, allocMode, descr, dn | format-table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvnsVlanInstP | Select-Object -ExpandProperty attributes | Select-Object name, allocMode, descr, dn 
     }
 
 function Get-ACI-Fabric-LeafAccessPolicy-All
@@ -778,10 +791,10 @@ function Get-ACI-Fabric-LeafAccessPolicy-All
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAccPortGrp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn | format-table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAccPortGrp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn 
     }
 
-function Get-ACI-Fabric-LeafAccessPolicy ([string]$LeafAccessPolicy)
+function Get-ACI-Fabric-LeafAccessPolicy ([Parameter(ValueFromPipelineByPropertyName)][string]$LeafAccessPolicy)
     {
     <#
     .SYNOPSIS
@@ -819,10 +832,12 @@ function Get-ACI-Fabric-LeafAccessPolicy ([string]$LeafAccessPolicy)
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAccPortGrp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn | format-table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty infraAccPortGrp | Select-Object -ExpandProperty attributes | Select-Object name, descr, dn 
     }
 
- function Get-ACI-Fabric-VLANPool ([string]$VLANPool,[string]$AllocMode)
+ function Get-ACI-Fabric-VLANPool (
+    [Parameter(ValueFromPipelineByPropertyName)][string]$VLANPool,
+    [string]$AllocMode)
     {
     <#
     .SYNOPSIS
@@ -877,7 +892,7 @@ function Get-ACI-Fabric-LeafAccessPolicy ([string]$LeafAccessPolicy)
     #Poll the URL via HTTP then convert to PoSH objects from JSON
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvnsEncapBlk | Select-Object -ExpandProperty attributes | Select-Object name, allocMode, from, to, dn | Format-Table
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty fvnsEncapBlk | Select-Object -ExpandProperty attributes | Select-Object name, allocMode, from, to, dn 
     }
 
 function Get-ACI-AAA-SecDomain
@@ -910,7 +925,7 @@ function Get-ACI-AAA-SecDomain
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaDomain | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, descr, dn        
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaDomain | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, descr, dn        
     }
 
     function Get-ACI-AAA-SecRole
@@ -945,7 +960,7 @@ function Get-ACI-AAA-SecDomain
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaRole | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, priv, roleIsBuiltin, descr, dn        
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaRole | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, priv, roleIsBuiltin, descr, dn        
     }
 
     function Get-ACI-AAA-LocalUsers
@@ -986,12 +1001,91 @@ function Get-ACI-AAA-SecDomain
     #Poll the URL via HTTP then convert to PoSH objects from JSON 
     $OutRawJson = $PollRaw.httpResponse | ConvertFrom-Json
     #Output
-    $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaUser | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, lastName, firstName, email, phone, accountStatus, expires, expiration, descr, dn        
+    Write-Output $OutRawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty aaaUser | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, lastName, firstName, email, phone, accountStatus, expires, expiration, descr, dn        
 
     }
 
+    function Get-ACI-Security-Contract-All ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant)
+    {
+    <#
+    .SYNOPSIS
+    Get the ACI Security Contracts for a given Tenant
+    
+    .DESCRIPTION
+    Get the ACI Security Contracts for a given Tenant
+    
+    .PARAMETER Tenant
+    The ACI Fabric Tenant
+    
+    .EXAMPLE
+    Get-ACI-Security-Contract-All -Tenant SnV
 
+    name     nameAlias scope               dn                     
+    ----     --------- -----               --                     
+    web                context             uni/tn-SnV/brc-web     
+    database           application-profile uni/tn-SnV/brc-database
+    
+    .NOTES
+    General notes
+    #>
+    if (!($Tenant))
+    {
+    Write-Host "No Tenant specified" -ForegroundColor Red
+    Break
+    }
+      
+    $PollURL = 'api/node/mo/uni/tn-' + $Tenant + '.json?query-target=children&target-subtree-class=vzBrCP'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    $RawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output ...
+    Write-Output $RawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty vzBrCP | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, scope, dn
+      
+    }
 
+    function Get-ACI-Security-Contract ([Parameter(ValueFromPipelineByPropertyName)][string]$Tenant, [string]$Contract)
+    {
+    <#
+    .SYNOPSIS
+    Get the ACI Security Contract detail for a given Tenant
+    
+    .DESCRIPTION
+    Get the ACI Security Contract for a given Tenant
+    
+    .PARAMETER Tenant
+    The ACI Fabric Tenant
+    
+    .PARAMETER Contract
+    The contract name within the given Tenant
+    
+
+    .EXAMPLE
+    
+    .NOTES
+    General notes
+    #>
+    if (!($Tenant))
+    {
+    Write-Host "No Tenant specified" -ForegroundColor Red
+    Break
+    }
+    if (!($Contract))
+    {
+    Write-Host "No Contract specified" -ForegroundColor Red
+    Break
+    }
+    
+    
+    $PollURL = 'api/node/mo/uni/tn-' + $Tenant + '.json?query-target=children&target-subtree-class=vzBrCP'
+    #Munge URL
+    $PollRaw = New-ACI-Api-Call -method GET -url https://$global:ACIPoSHAPIC/$PollURL
+    #Poll the URL via HTTP then convert to PoSH objects from JSON 
+    $RawJson = $PollRaw.httpResponse | ConvertFrom-Json
+    #Output ...
+    Write-Output $RawJson | Select-Object -ExpandProperty imData | Select-Object -ExpandProperty vzBrCP | Select-Object -ExpandProperty attributes | Select-Object name, nameAlias, scope, dn
+      
+    }
 
 
 ###################################################################################################################
@@ -1031,17 +1125,22 @@ function New-ACI-Tenant ([string]$Tenant,[string]$Description)
     $PollBody = '{"fvTenant":{"attributes":{"dn":"uni/tn-' + $Tenant + '","name":"' + $Tenant + '","descr":"' + $Description + '","rn":"' + $Tenant + '","status":"created"},"children":[]}}}'
     Try
         {
-        #Munge URL
         $PollRaw = New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then convert to PoSH objects from JSON
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        #Needs output validation here.  For now echo API return
-        Write-Host $APIRawJson 
+      
+        if(!($PollRaw.httpCode -eq 200))
+            {Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+             # Needs better output here but for now output
+             $PollRaw.httpCode
+             $PollRaw
+             Break
+             }
+        else {
+             Get-ACI-Tenant | Where-Object {$_.Name -like $Tenant }
+             }                 
         }
     Catch
         {
         Write-Host 'An error occured whilst calling the API. Exception: ($_.Exception.Message)' -ForegroundColor Red
-        Write-Host ' --- This is usually a typo or case issue, if you are sure you have the correct entries' -ForegroundColor Red
         }
     }
 
@@ -1067,7 +1166,7 @@ function New-ACI-VRF ([string]$Tenant,[string]$VRF,[string]$Description)
     New VRF description
     
     .EXAMPLE
-    New-ACI-vrf -Tenant dejungle -VRF amazon -Description 'SA'
+    New-ACI-VRF -Tenant dejungle -VRF amazon -Description 'SA'
     
     .NOTES
     This function currently returns raw data.  This needs to be cleaned up.  However if it does not error, it has worked !
@@ -1091,14 +1190,21 @@ function New-ACI-VRF ([string]$Tenant,[string]$VRF,[string]$Description)
         {
         #Munge URL
         $PollRaw	= New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then Convert to POSH objects from JSQN
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        write-host $APIRawJson
+        
+        if(!($PollRaw.httpCode -eq 200))
+            {Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+            # Needs better output here but for now output
+            $PollRaw.httpCode
+            $PollRaw
+            Break
+            }
+        else {
+            Get-ACI-VRF -Tenant $Tenant | Where-Object {$_.name -like $VRF }
+            }           
         }
     Catch
         {
-        Write-Host 'An error occured whilst calling the API. Exception: ($_.Exception.Message)' -ForegroundColor Red
-        Write-Host ' --- This is usually a typo or case issue, if you are sure you have the correct entries' -ForegroundColor Red
+            Write-Host 'An error occured whilst calling the API. Exception: ($_.Exception.Message)' -ForegroundColor Red
         }
     }
 
@@ -1156,11 +1262,17 @@ function New-ACI-L3out ([string]$Tenant,[string]$VRF,[string]$L3out,[string]$Des
     $PollBody = '{"l3extOut":{"attributes":{"dn":"uni/tn-' + $Tenant + '/out-' + $L3out + '","name":"' + $L3out + '","rn":"out-' + $L3out + '","status":"created"},"children":[{"l3extRsEctx":{"attributes":{"tnFvCtxName":"' + $VRF + '","status":"created,modified"},"children":[]}}]}}'
     Try
         {
-        #Munge URL
         $PollRaw	= New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then Convert to POSH objects from JSQN
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        write-host $APIRawJson
+        if(!($PollRaw.httpCode -eq 200))
+            {Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+            # Needs better output here but for now output
+            $PollRaw.httpCode
+            $PollRaw
+            Break
+            }
+        else {
+            Get-ACI-L3out -Tenant $Tenant -L3out $L3out
+            }           
         }
     Catch
         {
@@ -1288,12 +1400,18 @@ function New-ACI-BD ([string]$Tenant,[string]$VRF,[string]$BD,[string]$L3out,[st
     
     Try
         {
-        #Munge URL
         $PollRaw	= New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then convert to PoSH objects from JSON
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        #Needs output validation here.  For now echo API return
-        Write-Host $APIRawJson
+        
+        if(!($PollRaw.httpCode -eq 200))
+            {Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+            # Needs better output here but for now output
+            $PollRaw.httpCode
+            $PollRaw
+            Break
+            }
+        else {
+            Get-ACI-BD -Tenant $Tenant -BD $BD
+            }
         }
     Catch
         {
@@ -1346,10 +1464,17 @@ function New-ACI-AppProfile ([string]$Tenant,[string]$AP,[string]$Description)
         {
         #Munge URL
         $PollRaw	= New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then convert to PoSH objects from JSON
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        #Needs output validation here.  For now echo API return
-        Write-Host $APIRawJson
+
+        if(!($PollRaw.httpCode -eq 200))
+            {Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+            # Needs better output here but for now output
+            $PollRaw.httpCode
+            $PollRaw
+            Break
+            }
+        else {
+            Get-ACI-AppProfile -Tenant $Tenant -AP $AP
+            }           
         }
 
     Catch
@@ -1419,11 +1544,18 @@ function New-ACI-EPG ([string]$Tenant,[string]$AP,[string]$EPG,[string]$BD,[stri
     {
         #Munge URL
         $PollRaw	= New-ACI-Api-Call -method POST -url https://$global:ACIPoSHAPIC/$PollURL -postData $PollBody
-        #Poll the URL via HTTP then convert to PoSH objects from JSON
-        $APIRawJson	= $PollRaw.httpResponse	| ConvertFrom-Json
-        #Needs output validation here.  For now echo API return
-        Write-Host $APIRawJson
-    }
+
+        if(!($PollRaw.httpCode -eq 200))
+        {   Write-Host 'An error occured after calling the API.  Function failed.' -ForegroundColor Red
+            # Needs better output here but for now output
+            $PollRaw.httpCode
+            $PollRaw
+            Break
+            }
+        else {
+            Get-ACI-EPG -Tenant $Tenant -AP $AP -EPG $EPG 
+            }           
+     }
     Catch
     {
         Write-Host 'An error occured whilst calling the API. Exception: ($_.Exception.Message)' -ForegroundColor Red

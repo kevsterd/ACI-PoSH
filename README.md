@@ -41,35 +41,10 @@ You can also use the -StoreLocation argument to specify a credential file rather
 #### <i class="icon-pencil"></i> Commands
 Currently defined commands are:
 <pre>
-Get-ACI-Tenant
-Get-ACI-AppProfile
-Get-ACI-AppProfile-All
-Get-ACI-BD
-Get-ACI-BD-All
-Get-ACI-VRF
-Get-ACI-EPG
-Get-ACI-EPG-All
-Get-ACI-Fabric-AEEP
-Get-ACI-Fabric-LeafAccessPolicy
-Get-ACI-Fabric-LeafAccessPolicy-All
-Get-ACI-Fabric-Port-CDP
-Get-ACI-Fabric-Port-LACP
-Get-ACI-Fabric-Port-LinkLevel
-Get-ACI-Fabric-Port-LLDP
-Get-ACI-Fabric-Switch-Leaf
-Get-ACI-Fabric-VLANPool
-Get-Ad -Fabric-VLANPoo1-All
-Get-ACI-L3out
-Get-ACI-L3out-All
-New-ACI-AppProfile
-New-ACI-BD
-New-ACI-EPG
-New-ACI-Interface
-New-ACI-Interface-VPC 
-New-ACI-Tenant
-New-ACI-VRF
-Update-ACI-EPG
-Update-ACI-EPG-PortBinding
+# I removed the list of commands here, as it was getting too long.   To find all of them run:
+
+Get-Command | where-Object {$_.name -like '*-ACI-*'}
+
 </pre>
 All modules now have updated help text.   Hopefully that will be useful!
 <pre>
@@ -95,3 +70,10 @@ The above command will show all of the Application Profiles for Tenant TenX.
 
 The **-All** identifier is used for some commandlets, rather than being the default for the commands. One to fix for later releases.
 
+Now I have fixed the output/pipeline support remember how powerful PowerShell is so you can chain commands together.  For example: 
+
+<pre>
+Get-ACI-tenant | where-Object {$_.name -like '*Hos*'} | Get-ACI-vrf | Where-Object {$_.name -notlike '*vrf*'} | Format-Table
+</pre>
+
+This searches for Tenants that have the string 'Hos' within, then gets their VRF's which don't have the string 'vrf' within.  Then outputs as a table !
