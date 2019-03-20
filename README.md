@@ -1,4 +1,6 @@
 ﻿# PowerShell for Cisco ACI (ACI-PoSH)
+ 
+ [![published](https://static.production.devnetcloud.com/codeexchange/assets/images/devnet-published.svg)](https://developer.cisco.com/codeexchange/github/repo/kevsterd/ACI-PoSH)
 
 This is a set of PowerShell modules for Cisco ACI. These drive the native ACI RESTful API exposed by systems APIC's and expose these functions in PowerShell Commandlets.
 > **NOTE:**
